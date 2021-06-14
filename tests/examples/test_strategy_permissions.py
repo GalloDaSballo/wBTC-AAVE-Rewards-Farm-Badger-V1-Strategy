@@ -5,15 +5,13 @@ from helpers.SnapshotManager import SnapshotManager
 from helpers.time import days
 
 def state_setup(deployer, sett, controller, strategy, want):
-    startingBalance = want.balanceOf(deployer)
-
     settKeeper = accounts.at(sett.keeper(), force=True)
     strategyKeeper = accounts.at(strategy.keeper(), force=True)
 
     tendable = strategy.isTendable()
 
     startingBalance = want.balanceOf(deployer)
-    depositAmount = int(startingBalance * 0.8)
+    depositAmount = int(startingBalance * 0.5)
     assert startingBalance >= depositAmount
     want.approve(sett, MaxUint256, {"from": deployer})
     sett.deposit(depositAmount, {"from": deployer})
