@@ -20,6 +20,7 @@ def test_deposit_withdraw_single_user_flow(deployer, vault, controller, strategy
 
     snap.settDeposit(depositAmount, {"from": deployer})
     
+    shares = vault.balanceOf(deployer)
 
     # Earn
     with brownie.reverts("onlyAuthorizedActors"):
@@ -30,12 +31,12 @@ def test_deposit_withdraw_single_user_flow(deployer, vault, controller, strategy
     chain.sleep(15)
     chain.mine(1)
 
-    snap.settWithdraw(depositAmount // 2, {"from": deployer})
+    snap.settWithdraw(shares // 2, {"from": deployer})
 
     chain.sleep(10000)
     chain.mine(1)
 
-    snap.settWithdraw(depositAmount // 2 - 1, {"from": deployer})
+    snap.settWithdraw(shares // 2 - 1, {"from": deployer})
 
 
 
@@ -53,6 +54,9 @@ def test_single_user_harvest_flow(deployer, vault, sett, controller, strategy, w
     # Deposit
     want.approve(sett, MaxUint256, {"from": deployer})
     snap.settDeposit(depositAmount, {"from": deployer})
+
+    shares = vault.balanceOf(deployer)
+
 
     assert want.balanceOf(sett) > 0
     print("want.balanceOf(sett)", want.balanceOf(sett))
@@ -86,13 +90,13 @@ def test_single_user_harvest_flow(deployer, vault, sett, controller, strategy, w
     if tendable:
         snap.settTend({"from": strategyKeeper})
 
-    snap.settWithdraw(depositAmount // 2, {"from": deployer})
+    snap.settWithdraw(shares // 2, {"from": deployer})
 
     chain.sleep(days(3))
     chain.mine()
 
     snap.settHarvest({"from": strategyKeeper})
-    snap.settWithdraw(depositAmount // 2 - 1, {"from": deployer})
+    snap.settWithdraw(shares // 2 - 1, {"from": deployer})
 
 
 def test_migrate_single_user(deployer, vault, sett, controller, strategy, want, strategist):
@@ -194,7 +198,7 @@ def test_withdraw_other(deployer, sett, controller, strategy, want):
     # Setup
     randomUser = accounts[6]
     startingBalance = want.balanceOf(deployer)
-    depositAmount = Wei("1 ether")
+    depositAmount = startingBalance // 2
     assert startingBalance >= depositAmount
     # End Setup
 
@@ -248,7 +252,7 @@ def test_single_user_harvest_flow_remove_fees(deployer, vault, sett, controller,
     startingBalance = want.balanceOf(deployer)
     tendable = strategy.isTendable()
     startingBalance = want.balanceOf(deployer)
-    depositAmount = Wei("1 ether")
+    depositAmount = startingBalance
     assert startingBalance >= depositAmount
     # End Setup
 

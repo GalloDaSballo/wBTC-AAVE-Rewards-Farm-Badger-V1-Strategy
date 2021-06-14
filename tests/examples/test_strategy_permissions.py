@@ -157,7 +157,7 @@ def test_strategy_config_permissions(strategy):
         strategy.setPerformanceFeeStrategist(0, {"from": randomUser})
 
 
-def test_strategy_pausing_permissions(deployer, controller, strategy, want):
+def test_strategy_pausing_permissions(deployer, sett, controller, strategy, want):
     # Setup
     state_setup(deployer, sett, controller, strategy, want)
     randomUser = accounts[8]
