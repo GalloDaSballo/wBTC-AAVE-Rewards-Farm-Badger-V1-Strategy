@@ -40,8 +40,16 @@ class StrategyResolver(StrategyCoreResolver):
 
         (Strategy Must Implement)
         """
-        ## No tend for us
-        assert True
+        ## If Tends work, then you can't tend again
+        assert after.get("strategy.isTendable") == False
+
+        ## Tendable if we have some balance of want in strat
+        assert before.get("strategy.balanceOfWant") > 0
+        ## If tend works then balance after will be 0
+        assert after.get("strategy.balanceOfWant") == 0
+
+        ## Since tends invest let's ensure balance of pool has grown
+        assert after.get("strategy.balanceOfPool") > before.get("strategy.balanceOfPool")
 
     def get_strategy_destinations(self):
         """

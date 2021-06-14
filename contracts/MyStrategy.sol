@@ -90,7 +90,7 @@ contract MyStrategy is BaseStrategy {
     }
 
     function isTendable() public view override returns (bool) {
-        return IERC20Upgradeable(want).balanceOf(address(this)) > 0;
+        return balanceOfWant() > 0;
     }
 
     // @dev These are the tokens that cannot be moved except by the vault
@@ -232,7 +232,7 @@ contract MyStrategy is BaseStrategy {
     function tend() external whenNotPaused {
         _onlyAuthorizedActors();
 
-        uint256 toDeposit = IERC20Upgradeable(want).balanceOf(address(this));
+        uint256 toDeposit = balanceOfWant();
         if (toDeposit == 0) {
             ILendingPool(LENDING_POOL).deposit(
                 want,
