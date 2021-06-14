@@ -24,6 +24,9 @@ def test_my_custom_test(want, deployer, vault, strategy, aavePool, aaveRewards):
   vault.deposit(balance, {"from": deployer})
   vault.earn({"from": deployer})
 
+  chain.sleep(15)
+  chain.mine(500)
+
   aToken = Contract.from_explorer(strategy.aToken())
 
   assert strategy.balanceOfPool() == aToken.balanceOf(strategy)
