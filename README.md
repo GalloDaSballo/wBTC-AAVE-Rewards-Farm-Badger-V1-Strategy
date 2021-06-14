@@ -1,5 +1,13 @@
 # Badger Strategy V1 Brownie Mix
 
+Demo Strategy for Badger V1 Vaults.
+
+This strategy will deposit wBTC on AAVE to earn interest and rewards
+
+## onHarvest
+The Strategy will harvest stkAAVE, then swap it into AAVE, it will then swap the AAVE into wBTC.
+
+
 ## What you'll find here
 
 - Basic Solidity Smart Contract for creating your own Badger Strategy ([`contracts/MyStrategy.sol`](contracts/MyStrategy.sol))
