@@ -8,104 +8,25 @@ from config import (
   FEES
 )
 from dotmap import DotMap
-
+from scripts.deploy import deploy
 
 def main():
-  return deploy()
+  return demo()
 
-def deploy():
+def demo():
   """
     Deploys, vault, controller and strats and wires them up for you to test
+    Also makes a deposit
+    Used in the brownie console to save time
   """
-  deployer = accounts[0]
+  deployed = deploy()
 
-  strategist = deployer
-  keeper = deployer
-  guardian = deployer
+  toDep = deployed.want.balanceOf(deployed.deployer)
 
-  governance = accounts.at(BADGER_DEV_MULTISIG, force=True)
-
-  controller = Controller.deploy({"from": deployer})
-  controller.initialize(
-    BADGER_DEV_MULTISIG,
-    strategist,
-    keeper,
-    BADGER_DEV_MULTISIG
-  )
-
-  sett = SettV3.deploy({"from": deployer})
-  sett.initialize(
-    WANT,
-    controller,
-    BADGER_DEV_MULTISIG,
-    keeper,
-    guardian,
-    False,
-    "prefix",
-    "PREFIX"
-  )
-
-  sett.unpause({"from": governance})
-  controller.setVault(WANT, sett)
-
-
-  ## TODO: Add guest list once we find compatible, tested, contract
-  # guestList = VipCappedGuestListWrapperUpgradeable.deploy({"from": deployer})
-  # guestList.initialize(sett, {"from": deployer})
-  # guestList.setGuests([deployer], [True])
-  # guestList.setUserDepositCap(100000000)
-  # sett.setGuestList(guestList, {"from": governance})
-
-  ## Start up Strategy
-  strategy = MyStrategy.deploy({"from": deployer})
-  strategy.initialize(
-    BADGER_DEV_MULTISIG,
-    strategist,
-    controller,
-    keeper,
-    guardian,
-    PROTECTED_TOKENS,
-    FEES
-  )
-
-  ## Tool that verifies bytecode (run independetly) <- Webapp for anyone to verify
-
-  ## Set up tokens
-  want = interface.IERC20(WANT)
-  lpComponent = interface.IERC20(LP_COMPONENT)
-  rewardToken = interface.IERC20(REWARD_TOKEN)
-
-  ## Wire up Controller to Strart
-  ## In testing will pass, but on live it will fail
-  controller.approveStrategy(WANT, strategy, {"from": governance})
-  controller.setStrategy(WANT, strategy, {"from": deployer})
-
-  ## Uniswap some tokens here
-  router = Contract.from_explorer("0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D")
-  router.swapExactETHForTokens(
-    0, ## Mint out
-    ["0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2", WANT],
-    deployer,
-    9999999999999999,
-    {"from": deployer, "value": 50000000000000000000} ## 50 eth
-  )
-
-  toDep = want.balanceOf(deployer)
-
-  want.approve(sett, toDep, {"from": deployer})
-  sett.deposit(toDep, {"from": deployer})
-  sett.earn({"from": deployer})
+  deployed.want.approve(deployed.sett, toDep, {"from": deployed.deployer})
+  deployed.sett.deposit(toDep, {"from": deployed.deployer})
+  deployed.sett.earn({"from": deployed.deployer})
 
   chain.sleep(50) ## So we accrue interest
 
-  return DotMap(
-    deployer=deployer,
-    controller=controller,
-    vault=sett,
-    sett=sett,
-    strategy=strategy,
-    # guestList=guestList,
-    want=want,
-    lpComponent=lpComponent,
-    rewardToken=rewardToken
-  )
+  return deployed
