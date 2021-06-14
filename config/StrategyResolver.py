@@ -14,16 +14,23 @@ class StrategyResolver(StrategyCoreResolver):
         )
 
         # # Strategist should earn if fee is enabled and value was generated
-        # if before.get("strategy.performanceFeeStrategist") > 0 and valueGained:
-        #     assert after.balances("want", "strategist") > before.balances(
-        #         "want", "strategist"
-        #     )
+        if before.get("strategy.performanceFeeStrategist") > 0 and valueGained:
+            assert after.balances("want", "strategist") > before.balances(
+                "want", "strategist"
+            )
 
-        # # Strategist should earn if fee is enabled and value was generated
-        # if before.get("strategy.performanceFeeGovernance") > 0 and valueGained:
-        #     assert after.balances("want", "governanceRewards") > before.balances(
-        #         "want", "governanceRewards"
-        #     )
+        # Governance should earn if fee is enabled and value was generated
+        if before.get("strategy.performanceFeeGovernance") > 0 and valueGained:
+            assert after.balances("want", "governanceRewards") > before.balances(
+                "want", "governanceRewards"
+            )
+    
+    def confirm_harvest_state(self, before, after, tx):
+        # Strategy want should increase
+        assert after.get("strategy.balanceOf") >= before.get("strategy.balanceOf")
+
+        # PPFS should not decrease
+        assert after.get("sett.pricePerFullShare") >= before.get("sett.pricePerFullShare")
 
     def confirm_tend(self, before, after, tx):
         """
@@ -33,6 +40,7 @@ class StrategyResolver(StrategyCoreResolver):
 
         (Strategy Must Implement)
         """
+        ## No tend for us
         assert True
 
     def get_strategy_destinations(self):
@@ -41,10 +49,7 @@ class StrategyResolver(StrategyCoreResolver):
         (Strategy Must Implement)
         """
         # E.G
-        # strategy = self.manager.strategy
-        # return {
-        #     "gauge": strategy.gauge(),
-        #     "mintr": strategy.mintr(),
-        # }
-
-        return {}
+        strategy = self.manager.strategy
+        return {
+            "LendingPool": strategy.LENDING_POOL(),
+        }
