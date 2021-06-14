@@ -166,6 +166,8 @@ class StrategyCoreResolver:
         assert after.get("strategy.balanceOf") > before.get("strategy.balanceOf")
         assert after.balances("want", "user") == before.balances("want", "user")
 
+        self.hook_after_earn(before, after, params)
+
     def confirm_withdraw(self, before, after, params, tx):
         """
         Withdraw Should;
@@ -242,6 +244,7 @@ class StrategyCoreResolver:
             assert after.balances("want", "governanceRewards") > before.balances(
                 "want", "governanceRewards"
             )
+        self.hook_after_confirm_withdraw(before, after, params)
 
     def confirm_deposit(self, before, after, params):
         """
@@ -287,9 +290,35 @@ class StrategyCoreResolver:
             before.balances("sett", "user") + expected_shares,
             1,
         )
+        self.hook_after_confirm_deposit(before, after, params)
 
     # ===== Strategies must implement =====
+    def hook_after_confirm_withdraw(self, before, after, params):
+        """
+            Specifies extra check for ordinary operation on withdrawal
+            Use this to verify that balances in the get_strategy_destinations are properly set
+        """
+        assert False
+
+    def hook_after_confirm_deposit(self, before, after, params):
+        """
+            Specifies extra check for ordinary operation on deposit
+            Use this to verify that balances in the get_strategy_destinations are properly set
+        """
+        assert False
+
+    def hook_after_earn(self, before, after, params):
+        """
+            Specifies extra check for ordinary operation on earn
+            Use this to verify that balances in the get_strategy_destinations are properly set
+        """
+        assert False
+
+
     def confirm_harvest(self, before, after, tx):
+        """
+            Verfies that the Harvest produced yield and fees
+        """
         console.print("=== Compare Harvest ===")
         self.manager.printCompare(before, after)
         self.confirm_harvest_state(before, after, tx)

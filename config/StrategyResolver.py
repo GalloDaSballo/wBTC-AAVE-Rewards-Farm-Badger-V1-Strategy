@@ -4,6 +4,31 @@ from rich.console import Console
 console = Console()
 
 class StrategyResolver(StrategyCoreResolver):
+    def hook_after_confirm_withdraw(self, before, after, params):
+        """
+            Specifies extra check for ordinary operation on withdrawal
+            Use this to verify that balances in the get_strategy_destinations are properly set
+        """
+        ## Pool will send funds from aToken
+        assert after.balances("want", "aToken") < before.balances("want", "aToken")
+
+    def hook_after_confirm_deposit(self, before, after, params):
+        """
+            Specifies extra check for ordinary operation on deposit
+            Use this to verify that balances in the get_strategy_destinations are properly set
+        """
+        ## Nothing specific during a deposit
+        assert True
+
+
+    def hook_after_earn(self, before, after, params):
+        """
+            Specifies extra check for ordinary operation on earn
+            Use this to verify that balances in the get_strategy_destinations are properly set
+        """
+        ## Pool will send funds to aToken during earn
+        assert after.balances("want", "aToken") > before.balances("want", "aToken")
+
     def confirm_harvest(self, before, after, tx):
         console.print("=== Compare Harvest ===")
         self.manager.printCompare(before, after)
@@ -60,4 +85,5 @@ class StrategyResolver(StrategyCoreResolver):
         strategy = self.manager.strategy
         return {
             "LendingPool": strategy.LENDING_POOL(),
+            "aToken": strategy.aToken()
         }
