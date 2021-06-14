@@ -87,8 +87,16 @@ def deploy():
     ["0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2", WANT],
     deployer,
     9999999999999999,
-    {"from": deployer, "value": 5000000000000000000}
+    {"from": deployer, "value": 50000000000000000000} ## 50 eth
   )
+
+  toDep = want.balanceOf(deployer)
+
+  want.approve(sett, toDep, {"from": deployer})
+  sett.deposit(toDep, {"from": deployer})
+  sett.earn({"from": deployer})
+
+  chain.sleep(50) ## So we accrue interest
 
   return DotMap(
     deployer=deployer,
